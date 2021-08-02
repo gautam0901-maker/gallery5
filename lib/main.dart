@@ -1,18 +1,21 @@
 import 'dart:convert';
-
+import 'News.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'Gallery.dart';
 
+bool themeSwitch = false;
 void main() {
-  runApp(gautam());
+  runApp(MyBottomBar());
 }
-class gautam extends StatefulWidget {
+class MyBottomBar extends StatefulWidget {
   @override
-  _gautamState createState() => _gautamState();
+  _MyBottomBarState createState() => _MyBottomBarState();
 }
 
-class _gautamState extends State<gautam> {
-  bool themeSwitch = false;
+class _MyBottomBarState extends State<MyBottomBar> {
+
+  @override
+
 
   dynamic themeColors() {
     if (themeSwitch) {
@@ -20,32 +23,25 @@ class _gautamState extends State<gautam> {
     } else {
       return Colors.white54;
     }
-  }
-  List<String> images = new List();
-  ScrollController _scrollController = new ScrollController();
-  @override
-  void initState(){
-    super.initState();
-    getImages();
-    _scrollController.addListener(() {
-      if(_scrollController.position.pixels == _scrollController.position.maxScrollExtent){
-        getImages();
 
-      }
+  }
+  void OnTappedBar(int index){
+    setState(() {
+      _currentIndex = index;
     });
   }
-  @override
-  void dispose(){
-    _scrollController.dispose();
-    super.dispose();
-  }
+  int _currentIndex = 0;
+  final List<Widget> _children = [
+    gautam(),
+    Home(),
+  ];
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return  MaterialApp(
       home: Scaffold(
         appBar: AppBar(
           centerTitle: true,
           title: Text(
-            "Gallery",
+            "Gallery And News",
             style: TextStyle(
                 color: themeSwitch
                     ? Colors.white
@@ -72,37 +68,41 @@ class _gautamState extends State<gautam> {
             ),
           ),
         ),
-        body: ListView.builder(
-            controller: _scrollController,
-            itemCount: images.length,
-            itemBuilder: (BuildContext context, int index){
-              return Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(10))
+        body: _children[_currentIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          onTap: OnTappedBar,
+          backgroundColor: themeColors(),
+          items: [
+            BottomNavigationBarItem(
+              icon: new Icon(Icons.photo,
+                color: themeSwitch ? Colors.white : Colors.grey[850] ,
+              ),
+              title: new Text("Gallery",
+                style: TextStyle(
+                  color: themeSwitch
+                      ? Colors.white
+                      : Colors.grey[850],
                 ),
-                child: Image.network(images[index],fit: BoxFit.fitWidth,),
-              );
-            }),
+              ),
+
+            ),
+            BottomNavigationBarItem(
+              backgroundColor: themeColors(),
+              icon: new Icon(Icons.radio ,
+                color: themeSwitch ? Colors.white : Colors.grey[850] ,
+              ),
+              title: new Text("News",
+                style: TextStyle(
+                  color: themeSwitch
+                      ? Colors.white
+                      : Colors.grey[850],
+                ),
+              ),
+            )
+          ],
+        ),
+
       ),
     );
-  }
-  fetch ()async{
-    final response = await http.get('https://dog.ceo/api/breeds/image/random');
-    if (response.statusCode == 200){
-      setState(() {
-        images.add(json.decode(response.body)['message']);
-      });
-
-    }
-    else {
-
-      throw Exception('Failed to load images');
-    }
-
-  }
-  getImages(){
-    for(int i=0;i<7;i++){
-      fetch();
-    }
   }
 }
